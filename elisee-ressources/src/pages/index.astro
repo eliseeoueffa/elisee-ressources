@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import KitForm from '../components/KitForm.astro';
+import { site } from '../config';
+
+const ressources = (await getCollection('ressources', ({ data }) => data.published))
+  .sort((a, b) => a.data.order - b.data.order);
+const types = [...new Set(ressources.map((r) => r.data.type))];
+const plural = (t: string) => (t.endsWith('s') ? t : `${t}s`);
+---
+<Base>
+  <section class="hero wrap">
+    <div class="hero__text">
+      <p class="eyebrow">Les ressources d’Elisée Ouéffa</p>
+      <h1>Ce que je crée, ce que j’utilise, <em>je le partage.</em></h1>
+      <p class="lead">
+        Je suis Elisée Ouéffa, Product Manager avec un passé d’ingénieure QA… mais pas que. Je réfléchis
+        aussi à la façon dont un produit se positionne, trouve ses utilisateurs, se distribue et grandit.
+        J’apprends en continu, je teste beaucoup, et je partage ici ce qui me sert en chemin.
+      </p>
+      <div class="actions">
+        <a class="btn btn--accent" href="#ressources">Voir les ressources</a>
+        <a class="btn btn--outline" href="#me-suivre">Me suivre</a>
+      </div>
+    </div>
+    <div class="hero__photo">
+      <img src="/elisee.jpg" alt="Portrait d’Elisée Ouéffa" width="720" height="850" />
+    </div>
+  </section>
+
+  <section id="ressources" class="wrap section">
+    <div class="section-head">
+      <div class="section-head__text">
+        <h2>Les ressources</h2>
+        <p class="muted">Tu entres ton email, la ressource arrive dans ta boîte.</p>
+      </div>
+      {types.length > 0 && (
+        <div class="filters" role="group" aria-label="Filtrer les ressources">
+          <button type="button" class="pill" aria-pressed="true" data-filter="all">Tout</button>
+          {types.map((t) => (
+            <button type="button" class="pill" aria-pressed="false" data-filter={t}>{plural(t)}</button>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="cards">
+      {ressources.map((r) => (
+        <article class="card" data-type={r.data.type}>
+          <div class="card__top">
+            <span class="tag">{r.data.type}</span>
+            <span class="muted small">Gratuit</span>
+          </div>
+          <h3>{r.data.title}</h3>
+          <p class="muted card__text">{r.data.card}</p>
+          <a class="btn btn--accent" href={`/ressources/${r.id}/`} data-umami-event={`Voir : ${r.id}`}>Recevoir gratuitement</a>
+        </article>
+      ))}
+      <article class="card card--soon">
+        <span class="soon">Bientôt</span>
+        <h3>D’autres ressources arrivent</h3>
+        <p class="muted">Inscris-toi pour les recevoir dès leur sortie.</p>
+        <a class="text-link" href="#newsletter">M’avertir</a>
+      </article>
+    </div>
+  </section>
+
+  <section id="me-suivre" class="band">
+    <div class="wrap band__inner">
+      <p class="eyebrow">Me suivre</p>
+      <h2>Je partage aussi au quotidien</h2>
+      <p class="lead">
+        Mes apprentissages, mes tests et ce que je découvre au fil de mes projets : retrouve-moi sur
+        {site.links.substack ? 'LinkedIn, Instagram et Substack' : 'LinkedIn et Instagram'}.
+      </p>
+      <div class="actions">
+        <a class="btn btn--outline" href={site.links.linkedin} data-umami-event="Réseau : LinkedIn">LinkedIn</a>
+        <a class="btn btn--outline" href={site.links.instagram} data-umami-event="Réseau : Instagram">Instagram</a>
+        {site.links.substack && (
+          <a class="btn btn--outline" href={site.links.substack} data-umami-event="Réseau : Substack">Substack</a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section id="newsletter" class="wrap section">
+    <div class="newsletter">
+      <div class="newsletter__text">
+        <h2>Reçois mes prochaines ressources</h2>
+        <p>Une nouvelle ressource dans ta boîte dès qu’elle sort. Pas de spam, désinscription en un clic.</p>
+      </div>
+      <KitForm formId={site.kitNewsletterFormId} variant="newsletter" event="Newsletter" buttonLabel="Je m’inscris" />
+    </div>
+  </section>
+</Base>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const cards = document.querySelectorAll<HTMLElement>('.card[data-type]');
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.filter;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      cards.forEach((c) => {
+        c.hidden = f !== 'all' && c.dataset.type !== f;
+      });
+    });
+  });
+</script>

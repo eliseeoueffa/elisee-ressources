@@ -1,0 +1,34 @@
+---
+// Formulaire relié à Kit. Sans identifiant, il s’affiche mais reste désactivé.
+interface Props {
+  formId: string;
+  variant: 'resource' | 'newsletter';
+  event: string; // nom du clic suivi dans Umami
+  buttonLabel: string;
+}
+const { formId, variant, event, buttonLabel } = Astro.props;
+const ready = formId.trim() !== '';
+const action = ready ? `https://app.kit.com/forms/${formId}/subscriptions` : undefined;
+const uid = `${variant}-${event.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+---
+<form class={`kit-form kit-form--${variant}`} action={action} method="post">
+  {variant === 'resource' && (
+    <div class="field">
+      <label for={`${uid}-prenom`}>Ton prénom</label>
+      <input id={`${uid}-prenom`} name="fields[first_name]" type="text" autocomplete="given-name" placeholder="Prénom" />
+    </div>
+  )}
+  <div class={variant === 'newsletter' ? 'field field--inline' : 'field'}>
+    <label for={`${uid}-email`}>Ton email</label>
+    <div class="field__row">
+      <input id={`${uid}-email`} name="email_address" type="email" autocomplete="email" placeholder="toi@exemple.com" required />
+      {variant === 'newsletter' && (
+        <button type="submit" class="btn btn--ink" disabled={!ready} data-umami-event={event}>{buttonLabel}</button>
+      )}
+    </div>
+  </div>
+  {variant === 'resource' && (
+    <button type="submit" class="btn btn--accent btn--block" disabled={!ready} data-umami-event={event}>{buttonLabel}</button>
+  )}
+  {!ready && <p class="form-pending">Formulaire bientôt disponible.</p>}
+</form>

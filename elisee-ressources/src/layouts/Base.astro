@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+import { site } from '../config';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = site.description } = Astro.props;
+const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — Ressources`;
+const home = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL('/elisee.jpg', Astro.site)} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=DM+Sans:opsz,wght@9..40,400..700&family=DM+Mono:wght@400;500&display=swap"
+    />
+    {site.umamiWebsiteId && (
+      <script defer src="https://cloud.umami.is/script.js" data-website-id={site.umamiWebsiteId}></script>
+    )}
+  </head>
+  <body>
+    <a class="skip" href="#contenu">Aller au contenu</a>
+    <header class="site-header wrap">
+      <a class="brand" href={home}>{site.name}</a>
+      <nav aria-label="Navigation principale" class="nav">
+        <a href={`${home}#ressources`}>Ressources</a>
+        <a href={`${home}#me-suivre`}>Me suivre</a>
+        <a class="btn btn--accent btn--small" href={`${home}#newsletter`}>S’inscrire</a>
+      </nav>
+    </header>
+
+    <main id="contenu">
+      <slot />
+    </main>
+
+    <footer class="site-footer wrap">
+      <span>© {new Date().getFullYear()} {site.name}</span>
+      <div class="footer-links">
+        <a href={site.links.linkedin}>LinkedIn</a>
+        <a href={site.links.instagram}>Instagram</a>
+        {site.links.substack && <a href={site.links.substack}>Substack</a>}
+      </div>
+    </footer>
+  </body>
+</html>

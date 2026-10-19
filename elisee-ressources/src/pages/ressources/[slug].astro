@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import KitForm from '../../components/KitForm.astro';
+
+export async function getStaticPaths() {
+  const ressources = await getCollection('ressources', ({ data }) => data.published);
+  return ressources.map((r) => ({ params: { slug: r.id }, props: { r } }));
+}
+const { r } = Astro.props;
+const d = r.data;
+---
+<Base title={d.title} description={d.card}>
+  <div class="wrap detail">
+    <article class="detail__main">
+      <nav aria-label="Fil d’Ariane" class="crumbs">
+        <a href="/#ressources">Ressources</a><span aria-hidden="true">/</span><span>{d.type}s</span>
+      </nav>
+
+      <header class="detail__head">
+        <span class="tag">{d.type} gratuit</span>
+        <h1>{d.title}</h1>
+        <p class="byline"><img src="/elisee.jpg" alt="" width="44" height="44" /><span>Partagé par <strong>Elisée Ouéffa</strong></span></p>
+        <p class="lead">{d.intro}</p>
+      </header>
+
+      {d.benefits.length > 0 && (
+        <section class="stack">
+          <h2>Ce que tu obtiens</h2>
+          <ul class="checks">
+            {d.benefits.map((b) => (
+              <li>
+                <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+          {d.note && <p class="note"><strong>À savoir :</strong> {d.note}</p>}
+        </section>
+      )}
+
+      {d.steps.length > 0 && (
+        <section class="stack">
+          <h2>Comment l’utiliser</h2>
+          <ol class="steps">
+            {d.steps.map((s, i) => (
+              <li><span class="steps__n">{i + 1}</span><span>{s}</span></li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      <div class="example">
+        {d.example && (
+          <>
+            <p class="example__label">Une fois installé, il suffit de demander</p>
+            <p class="example__line"><span>Toi :</span> {d.example.you}</p>
+            <p class="example__line example__line--agent"><span>Ton agent IA :</span> {d.example.agent}</p>
+          </>
+        )}
+        <p class="example__foot">{d.delivery}</p>
+      </div>
+    </article>
+
+    <aside class="detail__side">
+      <div class="form-card">
+        <h2>Reçois la ressource</h2>
+        <p class="muted">Gratuit. Envoyé automatiquement dans ta boîte mail.</p>
+        <KitForm formId={d.kitFormId} variant="resource" event={`Recevoir : ${r.id}`} buttonLabel="Recevoir la ressource" />
+        <p class="muted small">En t’inscrivant, tu reçois aussi mes prochaines ressources. Désinscription en un clic.</p>
+      </div>
+      <a class="more" href="/#ressources">
+        <span class="muted small">Autres ressources</span>
+        <span class="more__title">Voir toutes les ressources d’Elisée</span>
+      </a>
+    </aside>
+  </div>
+</Base>
